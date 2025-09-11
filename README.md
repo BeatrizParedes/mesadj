@@ -1,4 +1,7 @@
-# 🎧 DJ Console Simulator
+
+<img width="851" height="315" alt="capamesadj" src="https://github.com/user-attachments/assets/f1fa43ba-f9b6-483b-8bc2-67ae9cf21fc9" />
+
+# ConsoleGroove
 
 Bem-vindo ao **DJ Console Simulator**, um projeto que transforma o seu console em uma verdadeira mesa de DJ! Aqui, diferentes faixas musicais (representadas por instrumentos) tocam simultaneamente, e você é o DJ no controle de cada uma delas.  
 
