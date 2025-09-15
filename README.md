@@ -3,57 +3,71 @@
 
 # ConsoleGroove
 
-Bem-vindo ao **DJ Console Simulator**, um projeto que transforma o seu console em uma verdadeira mesa de DJ! Aqui, diferentes faixas musicais (representadas por instrumentos) tocam simultaneamente, e você é o DJ no controle de cada uma delas.  
+🎧 Transforme seu terminal em uma mesa de DJ! Controle instrumentos independentes que tocam simultaneamente.
+
+## Descrição do Projeto
+
+Este projeto cria uma mesa de DJ interativa usando **Python**, **Pygame** e **Threads**. Cada faixa musical (Bumbo, Caixa, Chimbal, Sintetizador) roda de forma independente, permitindo que o DJ controle cada instrumento individualmente. Os sons são gerados programaticamente pelo NumPy, sem necessidade de arquivos externos.
+
+## Funcionalidades
+
+* Cada instrumento é uma **thread independente**, tocando em loop contínuo.
+* Pausar, retomar e desligar cada faixa sem afetar as outras.
+* Menu interativo no console mostrando status de todas as faixas.
+* Sons gerados com ondas senoidais simulando diferentes instrumentos.
+* Controle seguro usando Locks para evitar conflitos entre threads.
+
+## Tecnologias
+
+* Python 3.x
+* Pygame (para tocar sons)
+* NumPy (para gerar sons programaticamente)
+* Threading (para executar faixas simultaneamente)
+
+## Como Rodar
+
+1. Clone este repositório ou baixe os arquivos.
+2. Instale as dependências:
+
+```bash
+pip install pygame numpy
+```
+
+3. Execute o programa:
+
+```bash
+python mesa_dj.py
+```
+
+4. Use o menu:
+
+   * `[1-4]` → Liga/desliga cada faixa.
+   * `P` → Para todas as faixas.
+   * `Q` → Sai da mesa.
+
+## Estrutura do Código
+
+1. **Bibliotecas:** `threading`, `numpy`, `pygame`, `time`, `os`.
+2. **Função `criar_som()`:** cria ondas sonoras programaticamente.
+3. **Classe `InstrumentoThread`:** controla cada faixa com métodos para ligar, pausar e parar.
+4. **Dicionário `instrumentos`:** armazena todas as threads.
+5. **Menu interativo:** exibe status de cada faixa e aceita comandos do usuário.
+
+## Conceitos Abordados
+
+* **Threads:** cada instrumento toca de forma independente.
+* **Lock/Sincronização:** evita conflitos ao alterar estado das faixas.
+* **Loop principal:** controla interação do usuário em tempo real.
+* **Áudio programático:** criação de sons usando NumPy.
+
+## Resumo
+
+Este projeto demonstra como criar um sistema interativo multithreaded, permitindo que o usuário controle diferentes instrumentos de forma simultânea em um console. É uma ótima introdução a conceitos de programação concorrente, controle de áudio e interação em tempo real.
 
 ---
 
-## 📝 Descrição do Projeto
+📌 **Pronto para entrega e uso como desafio de Mesa de DJ interativa!**
 
-O desafio é criar uma aplicação de console que simule uma **mesa de DJ**, onde cada instrumento toca de forma independente.  
-
-- Cada faixa (Bateria, Baixo, Synth, etc.) é executada em sua própria **thread**, garantindo que todas funcionem simultaneamente.  
-- Você pode **pausar, retomar ou encerrar** qualquer instrumento sem interferir nas demais faixas.  
-- O projeto explora conceitos de **concorrência e sincronização**, permitindo controlar o estado de cada thread de forma segura.  
-
----
-
-## 🎯 Conceitos Chave
-
-- **Threads Independentes**: Cada instrumento é um thread rodando em loop contínuo.  
-- **Controle de Estado**: Os estados possíveis de cada instrumento incluem:
-  - `Tocando`  
-  - `Pausado`  
-  - `Parado`  
-- **Sincronização**: Garantir que apenas um thread altere o estado de um instrumento por vez. Dependendo da linguagem, usamos mecanismos como:
-  - `lock` (C#)  
-  - `synchronized` (Java)  
-  - `Mutex` (Python, C++)  
-
-- **Interação com o Usuário**: Comandos de texto permitem ao DJ:
-  - Pausar/retomar faixas  
-  - Adicionar novos instrumentos  
-  - Visualizar status ao vivo  
-
----
-
-## 🚀 Funcionalidades Extras
-
-Para quem quiser ir além:
-
-1. **Volume e BPM**: Alterar o `Thread.Sleep()` no loop do instrumento para simular batidas mais rápidas ou lentas.  
-2. **Painel ao Vivo**: Mostrar o status de todas as faixas a cada 2 segundos, com o console sendo atualizado dinamicamente.  
-3. **Adicionar Instrumentos em Tempo Real**: O usuário pode adicionar uma nova faixa enquanto a música toca, mantendo a experiência interativa.  
-
----
-
-## 🛠 Tecnologias
-
-- Linguagens suportadas: C#, Java, Python, C++  
-- Conceitos aplicados:
-  - Threads  
-  - Locks / Mutex  
-  - Controle de estado de objetos  
-  - Interação via console  
 
 ## Equipe e Contato
 
@@ -64,12 +78,3 @@ Para quem quiser ir além:
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/5c5ebd9a-bd8d-4600-bf45-ae54c9ccd5bc" width="80" style="object-fit:cover;"> </div> | **Cecília Medeiros** <br> [LinkedIn](https://www.linkedin.com/in/medeiroscecilia22) |
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/73402bd7-f077-4679-9cbe-57bcbb939b29" width="80" style="object-fit:cover;"> </div> | **Isabella Batista** <br> [LinkedIn](https://www.linkedin.com/in/isabella-b-a096452b2/) |
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/02960a81-8439-47f8-bf8a-8cac7e296595" width="80" style="object-fit:cover;"> </div> | **Melissa Filgueiras** <br> [LinkedIn](https://www.linkedin.com/in/melissafilgueiras/) |
-
-
-
----
-
-## 💡 Como Jogar com o DJ
-
-1. Execute a aplicação no console.  
-2. Use comandos para controlar cada instrumento, como:
