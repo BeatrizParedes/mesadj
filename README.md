@@ -78,3 +78,5 @@ Este projeto demonstra como criar um sistema interativo multithreaded, permitind
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/5c5ebd9a-bd8d-4600-bf45-ae54c9ccd5bc" width="80" style="object-fit:cover;"> </div> | **Cecília Medeiros** <br> [LinkedIn](https://www.linkedin.com/in/medeiroscecilia22) |
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/73402bd7-f077-4679-9cbe-57bcbb939b29" width="80" style="object-fit:cover;"> </div> | **Isabella Batista** <br> [LinkedIn](https://www.linkedin.com/in/isabella-b-a096452b2/) |
 | <div style="width:80px; height:80px; overflow:hidden; border-radius:8px;"> <img src="https://github.com/user-attachments/assets/02960a81-8439-47f8-bf8a-8cac7e296595" width="80" style="object-fit:cover;"> </div> | **Melissa Filgueiras** <br> [LinkedIn](https://www.linkedin.com/in/melissafilgueiras/) |
+
+Para ver o guia completo do código, [clique aqui](DOC_CODIGO.md)
