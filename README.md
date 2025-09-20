@@ -30,7 +30,7 @@ Este projeto cria uma mesa de DJ interativa usando **Python**, **Pygame** e **Th
 2. Instale as dependências:
 
 ```bash
-pip install pygame numpy
+pip install pygame numpy controleAcao
 ```
 
 3. Execute o programa:
@@ -47,7 +47,7 @@ python mesa_dj.py
 
 ## Estrutura do Código
 
-1. **Bibliotecas:** `threading`, `numpy`, `pygame`, `time`, `os`.
+1. **Bibliotecas:** `threading`, `numpy`, `pygame`, `time`, `os`, `controleAcao`.
 2. **Função `criar_som()`:** cria ondas sonoras programaticamente.
 3. **Classe `InstrumentoThread`:** controla cada faixa com métodos para ligar, pausar e parar.
 4. **Dicionário `instrumentos`:** armazena todas as threads.

@@ -15,6 +15,8 @@ class InstrumentoThread(threading.Thread):
         self.nome = nome
         self.arquivo = arquivo_mp3
         self.som = pygame.mixer.Sound(arquivo_mp3)
+        self.arquivo = arquivo_mp3
+        self.som = pygame.mixer.Sound(arquivo_mp3)
         self.tocando = False
         self.pausado = False
         self.lock = threading.Lock()
@@ -65,11 +67,11 @@ if __name__ == "__main__":
 
     # Cria threads para cada stem
     instrumentos = [
-        InstrumentoThread("Baixo", os.path.join(pasta_stems, "TwisTandShout_bass.wav")),
-        InstrumentoThread("Bateria", os.path.join(pasta_stems, "TwisTandShout_drums.wav")),
-        InstrumentoThread("Guitarra", os.path.join(pasta_stems, "TwisTandShout_guitar.wav")),
-        InstrumentoThread("Piano", os.path.join(pasta_stems, "TwisTandShout_piano.wav")),
-        InstrumentoThread("Voz", os.path.join(pasta_stems, "TwisTandShout_vocals.wav"))
+        InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
+        InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
+        InstrumentoThread("Guitarra", os.path.join(pasta_stems, "Clocks_coldplay_guitar.wav")),
+        InstrumentoThread("Piano", os.path.join(pasta_stems, "Clocks_coldplay_piano.wav")),
+        InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
     ]
 
     # Inicia as threads

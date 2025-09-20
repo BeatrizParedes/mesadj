@@ -64,6 +64,7 @@ try:
 
 except KeyboardInterrupt:
     pass
+
 finally:
     for i in instrumentos.values():
         i.parar()
