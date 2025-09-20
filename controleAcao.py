@@ -1,88 +1,74 @@
-import threading  # vai criar e controlar as threads - cada instrumento terá uma-
-import time # controla o intervalo dos sons dos instrumentos
-import logging #import provisório 
+import time
+import sys
+from mesa_dj import InstrumentoThread
+import pygame
+import os
 
-# Configura o logging para mostrar só a mensagem (sem hora, sem nível)
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+# Inicializa mixer caso ainda não esteja ativo
+if not pygame.mixer.get_init():
+    pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
-class Instrumento(threading.Thread):
-    def __init__(self, nome, som, intervalo=1.0):
-        super().__init__()
-        self.nome = nome
-        self.som = som
-        self.intervalo = intervalo
+pygame.mixer.set_num_channels(8)
 
-        self.playing = threading.Event()
-        self.stop_flag = threading.Event()
-        self.playing.set()  # começa tocando
+# Caminho da pasta de stems
+pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
 
-    def pause(self):
-        """Pausar o instrumento"""
-        self.playing.clear()
+# Cria os instrumentos (stems)
+instrumentos = {
+    "baixo": InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
+    "bateria": InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
+    "guitarra": InstrumentoThread("Guitarra", os.path.join(pasta_stems, "Clocks_coldplay_guitar.wav")),
+    "piano": InstrumentoThread("Piano", os.path.join(pasta_stems, "Clocks_coldplay_piano.wav")),
+    "voz": InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
+}
 
-    def retomar(self):
-        """Retomar o instrumento"""
-        self.playing.set()
+# Inicia as threads
+for i in instrumentos.values():
+    i.start()
+print("\n🎛️ Console do DJ")
+print("Comandos: play <nome>, pause <nome>, stop <nome>, sair")
+print("Instrumentos disponíveis:", ", ".join(instrumentos.keys()))
+print()
 
-    def stop(self):
-        """Parar de vez"""
-        self.stop_flag.set()
-        self.playing.set()  # desbloqueia se estiver pausado
-
-    def run(self):
-        while not self.stop_flag.is_set():
-            self.playing.wait()  # espera se estiver pausado
-            logging.info(f"{self.nome}: {self.som}")
-            time.sleep(self.intervalo)
-
-
-# -----------------------------
-# Console interativo do DJ
-# -----------------------------
-if __name__ == "__main__":
-    # Criando os instrumentos
-    instrumentos = {
-        "bateria": Instrumento("Bateria", "🥁 Bum!", intervalo=1),
-        "baixo": Instrumento("Baixo", "🎸 Dum-dum!", intervalo=2),
-        "sintetizador": Instrumento("Synth", "🎹 piiii!", intervalo=1.5)
-    }
-
-    # Iniciando todos
-    for inst in instrumentos.values():
-        inst.start()
-
-    print("\n🎶 Console do DJ 🎶")
-    print("Comandos: pause <nome>, retomar <nome>, stop <nome>, exit\n")
-
+try:
     while True:
-        comando = input(">> ").strip().lower()
+        comando = input("> ").strip().lower().split()
 
-        if comando == "exit":
-            print("Encerrando todos os instrumentos...")
-            for inst in instrumentos.values():
-                inst.stop()
-            break
-
-        partes = comando.split()
-        if len(partes) != 2:
-            print("Comando inválido! Use: pause <nome>, retomar <nome>, stop <nome>")
+        if not comando:
             continue
 
-        acao, nome = partes
+        acao = comando[0]
+
+        if acao == "sair":
+            break
+
+        if len(comando) < 2:
+            print("Use: play/pause/stop <nome>")
+            continue
+
+        nome = comando[1]
         if nome not in instrumentos:
-            print(f"Instrumento '{nome}' não encontrado.")
+            print("Instrumento inválido.")
             continue
 
         inst = instrumentos[nome]
 
-        if acao == "pause":
-            inst.pause()
-            print(f"{nome.capitalize()} pausado.")
-        elif acao == "retomar":
-            inst.retomar()
-            print(f"{nome.capitalize()} retomado.")
+        if acao == "play":
+            inst.play()
+        elif acao == "pause":
+            inst.pausar()
         elif acao == "stop":
-            inst.stop()
-            print(f"{nome.capitalize()} parado.")
+            inst.parar()
         else:
-            print("Ação desconhecida! Use: pause, retomar ou stop.")
+            print("Ação desconhecida.")
+
+except KeyboardInterrupt:
+    pass
+finally:
+    for i in instrumentos.values():
+        i.parar()
+    for i in instrumentos.values():
+        i.join()
+    print("Threads encerradas.")
+    pygame.mixer.quit()
+    print("Saindo...")

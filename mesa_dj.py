@@ -1,5 +1,4 @@
 import threading
-import numpy as np
 import pygame
 import time
 import os
@@ -7,102 +6,80 @@ import os
 # Inicializa o mixer do Pygame
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
-# Função para criar sons programaticamente
-def criar_som(frequencia=440, duracao=500, volume=0.5):
-    sample_rate = 44100
-    n_samples = int(sample_rate * duracao / 1000)
-    t = np.linspace(0, duracao / 1000, n_samples, False)
-    onda = np.sin(frequencia * 2 * np.pi * t)
-    onda = (onda * 32767 * volume).astype(np.int16)
-    return pygame.sndarray.make_sound(np.column_stack([onda, onda]))
-
 # --- Classe Thread para cada instrumento ---
 class InstrumentoThread(threading.Thread):
-    def __init__(self, nome, frequencia):
+    channel_index = 0
+
+    def __init__(self, nome, arquivo_mp3):
         super().__init__()
         self.nome = nome
-        self.frequencia = frequencia
-        self.som = criar_som(frequencia, 300)
+        self.arquivo = arquivo_mp3
+        self.som = pygame.mixer.Sound(arquivo_mp3)
         self.tocando = False
         self.pausado = False
         self.lock = threading.Lock()
         self.running = True
 
+        self.channel = pygame.mixer.Channel(InstrumentoThread.channel_index)
+        InstrumentoThread.channel_index += 1
+
     def run(self):
         while self.running:
-            # Apenas toca se não estiver pausado
             with self.lock:
                 if self.tocando and not self.pausado:
-                    self.som.play()
-            time.sleep(0.3)  # Simula BPM / intervalo entre batidas
+                    if not self.channel.get_busy():
+                        self.channel.play(self.som, loops=-1)
+            time.sleep(0.2)
 
-    # Ligar/desligar faixa
-    def toggle(self):
-        with self.lock:
-            self.tocando = not self.tocando
-            if not self.tocando:
-                self.som.stop()
+    def play(self):
 
-    # Pausar/retomar faixa
-    def pausar(self):
         with self.lock:
-            self.pausado = not self.pausado
             if self.pausado:
-                self.som.stop()
+                self.channel.unpause()
+                self.pausado = False
+            else:
+                self.channel.play(self.som, loops=-1)
+            self.tocando = True
 
-    # Encerrar thread
-    def parar(self):
+    def pausar(self):
+        """Pausa se tocando, despausa se já estava pausado."""
         with self.lock:
-            self.running = False
-            self.som.stop()
+            if self.tocando:
+                if not self.pausado:
+                    self.channel.pause()
+                    self.pausado = True
+                else:
+                    self.channel.unpause()
+                    self.pausado = False
+    def parar(self):
+        """Para completamente e reinicia o áudio do zero."""
+        with self.lock:
+            self.channel.stop()
+            self.tocando = False
+            self.pausado = False
+            self.running = False  
 
-# --- Cria os instrumentos ---
-instrumentos = {
-    "1": InstrumentoThread("Bumbo", 100),
-    "2": InstrumentoThread("Caixa", 200),
-    "3": InstrumentoThread("Chimbal", 400),
-    "4": InstrumentoThread("Sintetizador", 600),
-}
+if __name__ == "__main__":
+    # Caminho da pasta de stems
+    pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
 
-# Inicia todas as threads
-for inst in instrumentos.values():
-    inst.start()
+    # Cria threads para cada stem
+    instrumentos = [
+        InstrumentoThread("Baixo", os.path.join(pasta_stems, "TwisTandShout_bass.wav")),
+        InstrumentoThread("Bateria", os.path.join(pasta_stems, "TwisTandShout_drums.wav")),
+        InstrumentoThread("Guitarra", os.path.join(pasta_stems, "TwisTandShout_guitar.wav")),
+        InstrumentoThread("Piano", os.path.join(pasta_stems, "TwisTandShout_piano.wav")),
+        InstrumentoThread("Voz", os.path.join(pasta_stems, "TwisTandShout_vocals.wav"))
+    ]
 
-# --- Cores do menu do Dj ---
-RED = "\033[91m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-CYAN = "\033[96m"
-RESET = "\033[0m"
+    # Inicia as threads
+    for i in instrumentos:
+        i.start()
 
-def mostrar_menu():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(f"{CYAN}🎧 Mesa de DJ Interativa 🎛️{RESET}")
-    print(f"{YELLOW}Escolha sua faixa e divirta-se!{RESET}\n")
-    for k, inst in instrumentos.items():
-        status = f"{GREEN}🎶 Tocando{RESET}" if inst.tocando else f"{RED}OFF{RESET}"
-        pause_status = " (Pausado)" if inst.pausado else ""
-        print(f"[{k}] {inst.nome} - {status}{pause_status}")
-    print("\n[P] Parar todas as faixas")
-    print("[Q] Sair da mesa\n")
-
-# --- Loop principal ---
-while True:
-    mostrar_menu()
-    escolha = input("👉 Sua escolha: ").strip().upper()
-
-    if escolha in instrumentos:
-        instrumentos[escolha].toggle()
-    elif escolha == "P":
-        for inst in instrumentos.values():
-            inst.tocando = False
-            inst.pausado = False
-            inst.som.stop()
-    elif escolha == "Q":
-        for inst in instrumentos.values():
-            inst.parar()
-        print(f"{CYAN}👋 Saindo da Mesa de DJ. Até mais!{RESET}")
-        break
-    else:
-        print(f"{RED}❌ Opção inválida! Tente de novo.{RESET}")
-        time.sleep(0.8)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        for i in instrumentos:
+            i.parar()
+        pygame.mixer.quit()
