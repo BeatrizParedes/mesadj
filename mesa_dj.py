@@ -42,7 +42,7 @@ class InstrumentoThread(threading.Thread):
             self.tocando = True
 
     def pausar(self):
-        """Pausa se tocando, despausa se já estava pausado."""
+        
         with self.lock:
             if self.tocando:
                 if not self.pausado:
@@ -52,7 +52,7 @@ class InstrumentoThread(threading.Thread):
                     self.channel.unpause()
                     self.pausado = False
     def parar(self):
-        """Para completamente e reinicia o áudio do zero."""
+        
         with self.lock:
             self.channel.stop()
             self.tocando = False
