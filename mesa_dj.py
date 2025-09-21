@@ -60,10 +60,10 @@ class InstrumentoThread(threading.Thread):
             self.running = False  
 
 if __name__ == "__main__":
-    # Caminho da pasta de stems
+   
     pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
 
-    # Cria threads para cada stem
+   
     instrumentos = [
         InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
         InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
     ]
 
-    # Inicia as threads
+   
     for i in instrumentos:
         i.start()
 
