@@ -4,16 +4,13 @@ from mesa_dj import InstrumentoThread
 import pygame
 import os
 
-# Inicializa mixer caso ainda não esteja ativo
 if not pygame.mixer.get_init():
     pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
 pygame.mixer.set_num_channels(8)
 
-# Caminho da pasta de stems
 pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
 
-# Cria os instrumentos (stems)
 instrumentos = {
     "baixo": InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
     "bateria": InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
@@ -22,7 +19,6 @@ instrumentos = {
     "voz": InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
 }
 
-# Inicia as threads
 for i in instrumentos.values():
     i.start()
 print("\n🎛️ Console do DJ")

@@ -3,10 +3,8 @@ import pygame
 import time
 import os
 
-# Inicializa o mixer do Pygame
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
-# --- Classe Thread para cada instrumento ---
 class InstrumentoThread(threading.Thread):
     channel_index = 0
 
