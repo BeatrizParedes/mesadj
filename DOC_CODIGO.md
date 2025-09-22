@@ -4,175 +4,228 @@
 
 ```python
 import threading
-import numpy as np
 import pygame
 import time
 import os
 ```
 
-* `threading`: permite criar vários “trabalhadores” (threads) que funcionam ao mesmo tempo.
-* `numpy`: usado para criar sons do zero, gerando ondas sonoras.
-* `pygame`: biblioteca que toca os sons.
-* `time`: serve para pausar o programa por alguns segundos (`sleep`).
-* `os`: usado para limpar a tela do terminal.
+* `threading`: permite criar várias threads para tocar sons simultaneamente.
+* `pygame`: biblioteca que toca sons a partir de arquivos `.wav`.
+* `time`: usado para pausas (`sleep`) no loop principal.
+* `os`: manipula caminhos de arquivos e pastas.
+
+---
 
 ## 2️⃣ Inicialização do Som
 
 ```python
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+pygame.mixer.set_num_channels(8)
 ```
 
-* Prepara o sistema de áudio.
-* `frequency=44100`: qualidade do som.
+* Inicializa o mixer do Pygame para tocar múltiplos sons simultaneamente.
+* `frequency=44100`: qualidade do áudio.
 * `size=-16`: 16 bits.
 * `channels=2`: estéreo.
-* `buffer=512`: ajuda o som a tocar sem travar.
+* `buffer=512`: evita travamentos no som.
+* `set_num_channels(8)`: permite até 8 canais simultâneos.
 
-## 3️⃣ Função para Criar Sons
+---
 
-```python
-def criar_som(frequencia=440, duracao=500, volume=0.5):
-    sample_rate = 44100
-    n_samples = int(sample_rate * duracao / 1000)
-    t = np.linspace(0, duracao / 1000, n_samples, False)
-    onda = np.sin(frequencia * 2 * np.pi * t)
-    onda = (onda * 32767 * volume).astype(np.int16)
-    return pygame.sndarray.make_sound(np.column_stack([onda, onda]))
-```
-
-* Cria sons simples como instrumentos.
-* `frequencia`: altura do som (grave/agudo).
-* `duracao`: tempo do som.
-* `volume`: intensidade do som.
-
-## 4️⃣ Classe da Faixa (Instrumento)
+## 3️⃣ Classe do Instrumento
 
 ```python
 class InstrumentoThread(threading.Thread):
-    def __init__(self, nome, frequencia):
+    channel_index = 0
+
+    def __init__(self, nome, arquivo_mp3):
         super().__init__()
         self.nome = nome
-        self.frequencia = frequencia
-        self.som = criar_som(frequencia, 300)
+        self.arquivo = arquivo_mp3
+        self.som = pygame.mixer.Sound(arquivo_mp3)
         self.tocando = False
         self.pausado = False
         self.lock = threading.Lock()
         self.running = True
+
+        self.channel = pygame.mixer.Channel(InstrumentoThread.channel_index)
+        InstrumentoThread.channel_index += 1
 ```
 
-* Cada instrumento é uma thread.
-* `tocando`: True se o som estiver ligado.
-* `pausado`: True se o som estiver pausado.
+* Cada instrumento é uma thread independente.
+* `tocando`: indica se o som está ativo.
+* `pausado`: indica se a faixa está pausada.
 * `lock`: evita conflitos entre threads.
-* `running`: True enquanto a thread estiver ativa.
+* `channel`: canal específico do Pygame para cada instrumento.
 
-## 5️⃣ Loop da Thread
+---
+
+## 4️⃣ Loop da Thread
 
 ```python
-    def run(self):
-        while self.running:
-            with self.lock:
-                if self.tocando and not self.pausado:
-                    self.som.play()
-            time.sleep(0.3)
+def run(self):
+    while self.running:
+        with self.lock:
+            if self.tocando and not self.pausado:
+                if not self.channel.get_busy():
+                    self.channel.play(self.som, loops=-1)
+        time.sleep(0.2)
 ```
 
 * Executa continuamente enquanto a thread estiver ativa.
-* Toca o som somente se estiver ligado e não pausado.
-* `sleep(0.3)`: intervalo entre batidas.
+* Reproduz o som se estiver tocando e não estiver pausado.
+* `loops=-1` toca o som em loop infinito.
+* `sleep(0.2)` evita sobrecarga do processador.
 
-## 6️⃣ Funções da Thread
+---
+
+## 5️⃣ Funções do Instrumento
 
 ```python
-    def toggle(self):
-        with self.lock:
-            self.tocando = not self.tocando
-            if not self.tocando:
-                self.som.stop()
+def play(self):
+    with self.lock:
+        if self.pausado:
+            self.channel.unpause()
+            self.pausado = False
+        else:
+            self.channel.play(self.som, loops=-1)
+        self.tocando = True
 
-    def pausar(self):
-        with self.lock:
-            self.pausado = not self.pausado
-            if self.pausado:
-                self.som.stop()
+def pausar(self):
+    with self.lock:
+        if self.tocando:
+            if not self.pausado:
+                self.channel.pause()
+                self.pausado = True
+            else:
+                self.channel.unpause()
+                self.pausado = False
 
-    def parar(self):
-        with self.lock:
-            self.running = False
-            self.som.stop()
+def parar(self):
+    with self.lock:
+        self.channel.stop()
+        self.tocando = False
+        self.pausado = False
+        self.running = False
 ```
 
-* `toggle()`: liga/desliga a faixa.
-* `pausar()`: pausa ou retoma sem desligar.
-* `parar()`: encerra a thread com segurança.
+* `play()`: toca ou retoma a faixa.
+* `pausar()`: pausa ou retoma a faixa sem reiniciar.
+* `parar()`: interrompe totalmente a faixa e encerra a thread.
 
-## 7️⃣ Criando os Instrumentos
+---
+
+## 6️⃣ Criando os Instrumentos
 
 ```python
+pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
+
 instrumentos = {
-    "1": InstrumentoThread("Bumbo", 100),
-    "2": InstrumentoThread("Caixa", 200),
-    "3": InstrumentoThread("Chimbal", 400),
-    "4": InstrumentoThread("Sintetizador", 600),
+    "baixo": InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
+    "bateria": InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
+    "guitarra": InstrumentoThread("Guitarra", os.path.join(pasta_stems, "Clocks_coldplay_guitar.wav")),
+    "piano": InstrumentoThread("Piano", os.path.join(pasta_stems, "Clocks_coldplay_piano.wav")),
+    "voz": InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
 }
+
 for inst in instrumentos.values():
     inst.start()
 ```
 
-* Cada faixa tem número, nome e frequência.
-* Threads iniciam e ficam prontas para tocar.
+* Cada instrumento recebe um arquivo `.wav`.
+* Threads são iniciadas, prontas para tocar.
 
-## 8️⃣ Menu Interativo
+---
+
+## 7️⃣ Menu Interativo
 
 ```python
-def mostrar_menu():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(f"🎧 Mesa de DJ Interativa 🎛️")
-    for k, inst in instrumentos.items():
-        status = "🎶 Tocando" if inst.tocando else "OFF"
-        pause_status = " (Pausado)" if inst.pausado else ""
-        print(f"[{k}] {inst.nome} - {status}{pause_status}")
-    print("\n[P] Parar todas as faixas")
-    print("[Q] Sair da mesa\n")
+print("\n🎛️ Console do DJ")
+print("Comandos:")
+print("  play <nome>   - tocar instrumento")
+print("  pause <nome>  - pausar/resumir instrumento")
+print("  stop <nome>   - parar instrumento")
+print("  all play      - tocar todos os instrumentos")
+print("  all stop      - parar todos os instrumentos")
+print("  sair          - sair do programa")
+print("Instrumentos disponíveis:", ", ".join(instrumentos.keys()))
 ```
 
-* Limpa a tela e mostra status de cada faixa.
-* Mostra opções para o usuário.
+* O usuário digita comandos para controlar cada faixa ou todos os instrumentos.
+* `all play` e `all stop` controlam todos os instrumentos simultaneamente.
 
-## 9️⃣ Loop Principal do DJ
+---
+
+## 8️⃣ Loop Principal do DJ
 
 ```python
-while True:
-    mostrar_menu()
-    escolha = input("👉 Sua escolha: ").strip().upper()
+try:
+    while True:
+        comando = input("> ").strip().lower().split()
 
-    if escolha in instrumentos:
-        instrumentos[escolha].toggle()
-    elif escolha == "P":
-        for inst in instrumentos.values():
-            inst.tocando = False
-            inst.pausado = False
-            inst.som.stop()
-    elif escolha == "Q":
-        for inst in instrumentos.values():
+        if not comando:
+            continue
+
+        acao = comando[0]
+
+        if acao == "sair":
+            break
+
+        if acao == "all":
+            if len(comando) < 2:
+                print("Use: all play / all stop")
+                continue
+            if comando[1] == "play":
+                for inst in instrumentos.values():
+                    inst.play()
+            elif comando[1] == "stop":
+                for inst in instrumentos.values():
+                    inst.parar()
+            continue
+
+        if len(comando) < 2:
+            print("Use: play/pause/stop <nome>")
+            continue
+
+        nome = comando[1]
+        if nome not in instrumentos:
+            print("Instrumento inválido.")
+            continue
+
+        inst = instrumentos[nome]
+
+        if acao == "play":
+            inst.play()
+        elif acao == "pause":
+            inst.pausar()
+        elif acao == "stop":
             inst.parar()
-        print("👋 Saindo da Mesa de DJ.")
-        break
-    else:
-        print("❌ Opção inválida! Tente de novo.")
-        time.sleep(0.8)
+        else:
+            print("Ação desconhecida.")
+
+except KeyboardInterrupt:
+    pass
+
+finally:
+    for i in instrumentos.values():
+        i.parar()
+    for i in instrumentos.values():
+        i.join()
+    pygame.mixer.quit()
+    print("👋 Saindo da Mesa de DJ.")
 ```
 
-* Recebe a escolha do usuário e controla as faixas.
-* `[1-4]`: liga/desliga a faixa.
-* `P`: para todas as faixas.
-* `Q`: encerra o programa.
-* Entrada inválida gera aviso.
+* Recebe e interpreta os comandos do usuário.
+* Permite tocar, pausar e parar instrumentos individuais ou todos ao mesmo tempo.
+* Ao sair, encerra todas as threads e libera o mixer do Pygame.
 
-## ✅ Resumo Simples
+---
+
+## ✅ Resumo Final
 
 * Cada instrumento é uma thread independente.
-* Threads podem tocar, pausar ou parar sem atrapalhar outras faixas.
-* Menu no terminal mostra status de todas as faixas em tempo real.
-* Locks (`threading.Lock`) evitam conflitos entre threads.
-* Sons são gerados pelo NumPy e tocados pelo Pygame, sem arquivos externos.
+* Suporta tocar, pausar e parar instrumentos individualmente ou todos juntos.
+* Menu interativo em texto no terminal.
+* `threading.Lock` garante segurança entre threads.
+* Sons são arquivos `.wav` externos carregados pelo Pygame.
+* Permite criar uma **mesa de DJ interativa** totalmente funcional no console.

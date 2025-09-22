@@ -13,8 +13,6 @@ class InstrumentoThread(threading.Thread):
         self.nome = nome
         self.arquivo = arquivo_mp3
         self.som = pygame.mixer.Sound(arquivo_mp3)
-        self.arquivo = arquivo_mp3
-        self.som = pygame.mixer.Sound(arquivo_mp3)
         self.tocando = False
         self.pausado = False
         self.lock = threading.Lock()
@@ -32,7 +30,6 @@ class InstrumentoThread(threading.Thread):
             time.sleep(0.2)
 
     def play(self):
-
         with self.lock:
             if self.pausado:
                 self.channel.unpause()
@@ -42,7 +39,6 @@ class InstrumentoThread(threading.Thread):
             self.tocando = True
 
     def pausar(self):
-        
         with self.lock:
             if self.tocando:
                 if not self.pausado:
@@ -51,19 +47,17 @@ class InstrumentoThread(threading.Thread):
                 else:
                     self.channel.unpause()
                     self.pausado = False
+
     def parar(self):
-        
         with self.lock:
             self.channel.stop()
             self.tocando = False
             self.pausado = False
-            self.running = False  
+            self.running = False
 
 if __name__ == "__main__":
-   
     pasta_stems = os.path.join(os.path.dirname(__file__), "stems")
 
-   
     instrumentos = [
         InstrumentoThread("Baixo", os.path.join(pasta_stems, "Clocks_coldplay_bass.wav")),
         InstrumentoThread("Bateria", os.path.join(pasta_stems, "Clocks_coldplay_drums.wav")),
@@ -72,14 +66,43 @@ if __name__ == "__main__":
         InstrumentoThread("Voz", os.path.join(pasta_stems, "Clocks_coldplay_vocals.wav"))
     ]
 
-   
-    for i in instrumentos:
-        i.start()
+    for inst in instrumentos:
+        inst.start()
 
     try:
         while True:
-            time.sleep(1)
+            print("\nMenu:")
+            for idx, inst in enumerate(instrumentos, start=1):
+                print(f"{idx}. Tocar/Pausar {inst.nome}")
+            print(f"{len(instrumentos)+1}. Tocar todos os instrumentos")
+            print(f"{len(instrumentos)+2}. Parar todos os instrumentos")
+            print("0. Sair")
+
+            escolha = input("Escolha uma opção: ")
+
+            if escolha.isdigit():
+                escolha = int(escolha)
+                if escolha == 0:
+                    break
+                elif 1 <= escolha <= len(instrumentos):
+                    instrumentos[escolha-1].pausar()  
+                elif escolha == len(instrumentos)+1:
+                    for inst in instrumentos:
+                        inst.play()  
+                    print("Todos os instrumentos estão tocando!")
+                elif escolha == len(instrumentos)+2:
+                    for inst in instrumentos:
+                        inst.parar()
+                    print("Todos os instrumentos parados!")
+                else:
+                    print("Opção inválida")
+            else:
+                print("Digite um número válido.")
+
     except KeyboardInterrupt:
-        for i in instrumentos:
-            i.parar()
+        pass
+    finally:
+        for inst in instrumentos:
+            inst.parar()
         pygame.mixer.quit()
+        print("Saindo...")

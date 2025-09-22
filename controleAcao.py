@@ -21,8 +21,15 @@ instrumentos = {
 
 for i in instrumentos.values():
     i.start()
+
 print("\n🎛️ Console do DJ")
-print("Comandos: play <nome>, pause <nome>, stop <nome>, sair")
+print("Comandos:")
+print("  play <nome>   - tocar instrumento")
+print("  pause <nome>  - pausar/resumir instrumento")
+print("  stop <nome>   - parar instrumento")
+print("  all play      - tocar todos os instrumentos")
+print("  all stop      - parar todos os instrumentos")
+print("  sair          - sair do programa")
 print("Instrumentos disponíveis:", ", ".join(instrumentos.keys()))
 print()
 
@@ -38,6 +45,24 @@ try:
         if acao == "sair":
             break
 
+        # Comandos para todos os instrumentos
+        if acao == "all":
+            if len(comando) < 2:
+                print("Use: all play / all stop")
+                continue
+            if comando[1] == "play":
+                for inst in instrumentos.values():
+                    inst.play()
+                print("Todos os instrumentos estão tocando!")
+            elif comando[1] == "stop":
+                for inst in instrumentos.values():
+                    inst.parar()
+                print("Todos os instrumentos parados!")
+            else:
+                print("Ação inválida para 'all'. Use play ou stop.")
+            continue
+
+        # Comandos individuais
         if len(comando) < 2:
             print("Use: play/pause/stop <nome>")
             continue
