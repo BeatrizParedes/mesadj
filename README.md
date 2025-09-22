@@ -34,7 +34,7 @@ pip install pygame
 3. Execute o programa:
 
 ```bash
-python mesa_dj.py
+python controleAcao.py
 ```
 
 4. Use o menu interativo:
