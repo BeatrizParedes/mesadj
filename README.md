@@ -14,7 +14,6 @@ Este projeto cria uma mesa de DJ interativa usando **Python**, **Pygame** e **Th
 * Pausar, retomar e desligar cada faixa sem afetar as outras.
 * Tocar todos os instrumentos simultaneamente com o comando `all play`.
 * Parar todos os instrumentos com `all stop`.
-* Menu interativo no console mostrando status de todas as faixas.
 * Controle seguro usando **Locks** para evitar conflitos entre threads.
 
 ## Tecnologias
